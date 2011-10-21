@@ -40,6 +40,55 @@ module Vagrant
     # The path to the default private key
     attr_reader :default_private_key_path
 
+    #---------------------------------------------------------------
+    # Class Methods
+    #---------------------------------------------------------------
+    class << self
+      # Verifies that VirtualBox is installed and that the version of
+      # VirtualBox installed is high enough.
+      def check_virtualbox!
+        version = VirtualBox.version
+        raise Errors::VirtualBoxNotDetected if version.nil?
+        raise Errors::VirtualBoxInvalidVersion, :version => version.to_s if version.to_f < 4.1 || version.to_f >= 4.2
+      rescue Errors::VirtualBoxNotDetected
+        # On 64-bit Windows, show a special error. This error is a subclass
+        # of VirtualBoxNotDetected, so libraries which use Vagrant can just
+        # rescue VirtualBoxNotDetected.
+        raise Errors::VirtualBoxNotDetected_Win64 if Util::Platform.windows? && Util::Platform.bit64?
+
+        # Otherwise, reraise the old error
+        raise
+      end
+
+      # Create a new Environment with options specified in the arguments.
+      def parse(argv, opts = {})
+        new(opts.merge(parse_arguments(argv)))
+      end
+
+      # Return a Hash of options for a new Environment from the arguments.
+      def parse_arguments(argv)
+        opts = {}
+
+        if vagrantfile = flag_value('vagrantfile', argv)
+          opts[:vagrantfile_name] = vagrantfile
+        end
+
+        if cwd = flag_value('cwd', argv)
+          opts[:cwd] = cwd
+        end
+
+        opts
+      end
+
+      def flag_value(flag, argv)
+        if match = argv.grep(/^--#{flag}=/).first
+          return match[/^--#{flag}=(.*)$/, 1]
+        elsif index = argv.index("--#{flag}")
+          return argv[index + 1]
+        end
+      end
+    end
+
     # Initializes a new environment with the given options. The options
     # is a hash where the main available key is `cwd`, which defines where
     # the environment represents. There are other options available but

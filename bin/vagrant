@@ -33,7 +33,7 @@ begin
   # Create the environment, which is the cwd of wherever the
   # `vagrant` command was invoked from
   logger.debug("Creating Vagrant environment")
-  env = Vagrant::Environment.new(opts)
+  env = Vagrant::Environment.parse(ARGV, opts)
 
   # Load the environment
   logger.debug("Loading environment")

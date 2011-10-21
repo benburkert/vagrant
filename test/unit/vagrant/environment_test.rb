@@ -22,6 +22,24 @@ describe Vagrant::Environment do
     end
   end
 
+  describe "class method argument parsing" do
+    it "set the vagrantfile_name option" do
+      env = described_class.parse(%w[--vagrantfile=/foo/bar])
+      assert env.vagrantfile_name.include?('/foo/bar')
+
+      env = described_class.parse(%w[--vagrantfile /foo/bar])
+      assert env.vagrantfile_name.include?('/foo/bar')
+    end
+
+    it "set the cwd option" do
+      env = described_class.parse(%w[--cwd=/foo/bar])
+      assert_equal Pathname.new('/foo/bar'), env.cwd
+
+      env = described_class.parse(%w[--cwd /foo/bar])
+      assert_equal Pathname.new('/foo/bar'), env.cwd
+    end
+  end
+
   describe "home path" do
     it "is set to the home path given" do
       dir = Tempdir.new.path
