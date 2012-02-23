@@ -71,10 +71,12 @@ module Vagrant
 
         if vagrantfile = flag_value('vagrantfile', argv)
           opts[:vagrantfile_name] = vagrantfile
+          delete_flag('vagrantfile', argv)
         end
 
         if cwd = flag_value('cwd', argv)
           opts[:cwd] = cwd
+          delete_flag('cwd', argv)
         end
 
         opts
@@ -85,6 +87,15 @@ module Vagrant
           return match[/^--#{flag}=(.*)$/, 1]
         elsif index = argv.index("--#{flag}")
           return argv[index + 1]
+        end
+      end
+
+      def delete_flag(flag, argv)
+        if index = argv.find_index {|s| s =~ /^--#{flag}=/ }
+          argv.delete_at(index)
+        elsif index = argv.index("--#{flag}")
+          argv.delete_at(index)
+          argv.delete_at(index)
         end
       end
     end
