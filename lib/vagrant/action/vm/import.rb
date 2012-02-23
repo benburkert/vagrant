@@ -9,6 +9,8 @@ module Vagrant
         def call(env)
           env[:ui].info I18n.t("vagrant.actions.vm.import.importing", :name => env[:vm].box.name)
 
+          env.reload! if env[:vm].nil?  # I have no idea why this is necessary, but it is.
+
           # Import the virtual machine
           ovf_file = env[:vm].box.directory.join("box.ovf").to_s
           env[:vm].uuid = env[:vm].driver.import(ovf_file) do |progress|
